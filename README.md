@@ -32,6 +32,20 @@ Instead of running these tasks synchronously inside the web request, RunGrid sch
 
 ---
 
+## Demo Login
+
+To explore the pre-seeded **Acme Cloud** multi-tenant demo environment:
+
+- **Email**: `owner@demo.com`
+- **Password**: `Password123!`
+- **Role**: `OWNER`
+- **Organization**: `Acme Cloud`
+- **Project**: `Customer Operations`
+
+> **Note**: `Password123!` is an intentional pre-configured demo credential provisioned by `scripts/seed_demo.py` for local application evaluation and UI testing.
+
+---
+
 ## 2. Key Features
 
 ### Core Execution Engine
