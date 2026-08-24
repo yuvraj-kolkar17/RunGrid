@@ -10,7 +10,34 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)
 ![Prometheus](https://img.shields.io/badge/Prometheus-Observability-E6522C.svg)
 
-**RunGrid** is a production-inspired distributed job orchestration platform for scheduling, executing, monitoring, retrying, and recovering background jobs across multiple distributed workers.
+RunGrid is a production-inspired distributed job orchestration platform for scheduling, executing, monitoring, retrying, and recovering background workloads across multiple workers.
+
+---
+
+## Table of Contents
+
+- [Product Overview](#1-product-overview)
+- [Key Features](#2-key-features)
+- [Product Screenshots](#3-product-screenshots)
+- [Demo Login](#4-demo-login)
+- [Architecture](#5-architecture)
+- [Job Lifecycle & State Machine](#6-job-lifecycle--state-machine)
+- [Atomic Claiming](#7-atomic-claiming-via-for-update-skip-locked)
+- [Retry System](#8-retry-system--backoff-strategies)
+- [Worker Architecture](#9-worker-architecture--safety)
+- [Prometheus Observability](#10-prometheus-observability)
+- [Platform Operations Center](#11-platform-operations-center)
+- [Database Schema Overview](#12-database-schema-overview)
+- [Project Structure](#13-project-structure)
+- [Local Development Setup](#14-local-development-setup)
+- [Docker Deployment](#15-docker-deployment)
+- [Demo Environment](#16-demo-environment-acme-cloud)
+- [Testing & Verification](#17-testing--verification)
+- [Documentation](#18-documentation)
+- [Security Policy](#19-security-policy)
+- [System Trade-offs & Limitations](#20-system-trade-offs--limitations)
+- [Future Roadmap](#21-future-roadmap)
+- [License](#22-license)
 
 ---
 
@@ -29,20 +56,6 @@ An e-commerce platform processing a customer checkout:
 4. **Batch Jobs**: Atomic bulk import of 500 customer records in a single transaction.
 
 Instead of running these tasks synchronously inside the web request, RunGrid schedules the work, guarantees at-least-once execution, and exposes real-time telemetry through an operator dashboard.
-
----
-
-## Demo Login
-
-To explore the pre-seeded **Acme Cloud** multi-tenant demo environment:
-
-- **Email**: `owner@demo.com`
-- **Password**: `Password123!`
-- **Role**: `OWNER`
-- **Organization**: `Acme Cloud`
-- **Project**: `Customer Operations`
-
-> **Note**: `Password123!` is an intentional pre-configured demo credential provisioned by `scripts/seed_demo.py` for local application evaluation and UI testing.
 
 ---
 
@@ -71,7 +84,70 @@ To explore the pre-seeded **Acme Cloud** multi-tenant demo environment:
 
 ---
 
-## 3. Architecture
+## 3. Product Screenshots
+
+RunGrid provides an operations-focused interface for managing distributed background workloads, queues, workers, workflows, failures, and system observability.
+
+### Authentication
+<p align="center">
+  <img src="docs/screenshots/01-login.png" alt="RunGrid Authentication" width="100%">
+</p>
+
+*Secure JWT-based authentication with role-aware access and persona quick-fill for testing.*
+
+---
+
+### Operations Dashboard
+<p align="center">
+  <img src="docs/screenshots/02-dashboard.png" alt="RunGrid Operations Dashboard" width="100%">
+</p>
+
+*The dashboard provides a high-level view of workload execution, queue health, worker capacity, throughput, reliability activity, and system metrics.*
+
+---
+
+### Job Submission
+<p align="center">
+  <img src="docs/screenshots/03-job-creation.png" alt="RunGrid Job Submission" width="100%">
+</p>
+
+*Jobs can be submitted as immediate, delayed, scheduled, recurring, or batch workloads through the RunGrid API and dashboard.*
+
+---
+
+### Platform Operations Center
+<p align="center">
+  <img src="docs/screenshots/08-platform-overview.png" alt="RunGrid Platform Operations Overview" width="100%">
+</p>
+
+*The Platform Operations Center provides centralized control and operational tooling for batch jobs, workflow DAGs, API rate limits, and failure diagnostics.*
+
+---
+
+### API Rate Limiting
+<p align="center">
+  <img src="docs/screenshots/12-rate-limiting.png" alt="RunGrid API Rate Limiting" width="100%">
+</p>
+
+*RunGrid exposes operational visibility into API rate limiting, including thread-safe sliding window metrics, endpoint policies, and interactive limit testing.*
+
+---
+
+## 4. Demo Login
+
+To explore the pre-seeded **Acme Cloud** multi-tenant demo environment:
+
+- **Email**: `owner@demo.com`
+- **Password**: `Password123!`
+- **Role**: `OWNER`
+- **Organization**: `Acme Cloud`
+- **Project**: `Customer Operations`
+
+> **Note**: `Password123!` is an intentional pre-configured demo credential provisioned by `scripts/seed_demo.py` for local application evaluation and UI testing.
+
+---
+
+## 5. Architecture
 
 ```
                     ┌─────────────────────────┐
@@ -110,7 +186,7 @@ To explore the pre-seeded **Acme Cloud** multi-tenant demo environment:
 
 ---
 
-## 4. Job Lifecycle & State Machine
+## 6. Job Lifecycle & State Machine
 
 ```
                   ┌───────────────┐
@@ -150,7 +226,7 @@ To explore the pre-seeded **Acme Cloud** multi-tenant demo environment:
 
 ---
 
-## 5. Atomic Claiming via `FOR UPDATE SKIP LOCKED`
+## 7. Atomic Claiming via `FOR UPDATE SKIP LOCKED`
 
 RunGrid handles concurrent worker polling across queues using PostgreSQL row-level skip locks:
 
@@ -170,7 +246,7 @@ This prevents race conditions and lock contention, allowing multiple worker thre
 
 ---
 
-## 6. Retry System & Backoff Strategies
+## 8. Retry System & Backoff Strategies
 
 RunGrid supports three configurable retry strategies:
 
@@ -183,7 +259,7 @@ RunGrid supports three configurable retry strategies:
 
 ---
 
-## 7. Worker Architecture & Safety
+## 9. Worker Architecture & Safety
 
 - **Task Registry**: Predefined Python functions mapped to `task_type` strings. No dynamic code evaluation (`eval`/`exec`) is permitted.
 - **Heartbeats**: Workers report active concurrency capacity every 5 seconds.
@@ -191,7 +267,7 @@ RunGrid supports three configurable retry strategies:
 
 ---
 
-## 8. Prometheus Observability
+## 10. Prometheus Observability
 
 Backend metrics exported at `/metrics`:
 - `rungrid_http_requests_total`: Counter by route, method, status code.
@@ -201,7 +277,7 @@ Backend metrics exported at `/metrics`:
 
 ---
 
-## 9. Platform Operations Center
+## 11. Platform Operations Center
 
 Accessible via the React Dashboard:
 - **Dashboard Overview**: KPI cards, recent workloads table, reliability feed.
@@ -212,7 +288,7 @@ Accessible via the React Dashboard:
 
 ---
 
-## 10. Database Schema Overview
+## 12. Database Schema Overview
 
 Primary database tables:
 - `organizations`, `users`, `projects`
@@ -223,7 +299,7 @@ Primary database tables:
 
 ---
 
-## 11. Project Structure
+## 13. Project Structure
 
 ```text
 RunGrid/
@@ -241,15 +317,16 @@ RunGrid/
 │   └── tests/            # Worker Unit Tests
 ├── frontend/             # React 19 + TypeScript + Tailwind CSS UI
 ├── database/             # Alembic Database Migrations
+├── docs/
+│   └── screenshots/      # Product Screenshots
 ├── monitoring/           # Prometheus Scraping Configuration
 ├── scripts/              # Demo Seeding & Benchmark Utilities
-├── docs/                 # Detailed Technical Documentation
 └── docker-compose.yml    # Container Orchestration Specification
 ```
 
 ---
 
-## 12. Local Development Setup
+## 14. Local Development Setup
 
 ### Prerequisites
 - Python 3.12+
@@ -284,7 +361,7 @@ RunGrid/
 
 ---
 
-## 13. Docker Deployment
+## 15. Docker Deployment
 
 Launch the complete stack with Docker Compose:
 
@@ -305,7 +382,7 @@ docker compose down
 
 ---
 
-## 14. Demo Environment (Acme Cloud)
+## 16. Demo Environment (Acme Cloud)
 
 Seed the Acme Cloud dataset with sample jobs, queues, cron schedules, and workflows:
 
@@ -322,7 +399,7 @@ Access the UI at `http://localhost:3000` and sign in with the **Owner Persona** 
 
 ---
 
-## 15. Testing & Verification
+## 17. Testing & Verification
 
 Run the backend test suite inside the container environment:
 
@@ -342,12 +419,12 @@ cd frontend && npm run build
 
 ---
 
-## 16. Documentation Links
+## 18. Documentation
 
 - [System Architecture](docs/architecture.md)
 - [Database Schema & State Machine](docs/database.md)
 - [REST API Specification](docs/api.md)
-- [Worker Daemon Architecture](docs/worker.md)
+- [Worker Architecture](docs/worker.md)
 - [Reliability & Fault Tolerance](docs/reliability.md)
 - [Prometheus Observability](docs/observability.md)
 - [Key Engineering Design Decisions](docs/design-decisions.md)
@@ -357,7 +434,7 @@ cd frontend && npm run build
 
 ---
 
-## 17. Security Policy
+## 19. Security Policy
 
 - OAuth2 Bearer Tokens (JWT) for authentication.
 - Scoped tenant isolation via `organization_id`.
@@ -366,7 +443,7 @@ cd frontend && npm run build
 
 ---
 
-## 18. System Trade-offs & Limitations
+## 20. System Trade-offs & Limitations
 
 - **At-Least-Once Execution**: Handlers must be written to be idempotent.
 - **In-Memory Rate Limiting**: Default rate limiter operates process-locally.
@@ -374,7 +451,7 @@ cd frontend && npm run build
 
 ---
 
-## 19. Future Roadmap
+## 21. Future Roadmap
 
 - Redis-backed distributed rate limiting.
 - WebSocket / Server-Sent Events (SSE) live updates.
@@ -383,6 +460,6 @@ cd frontend && npm run build
 
 ---
 
-## 20. License
+## 22. License
 
 License: To be determined.
