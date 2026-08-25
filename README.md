@@ -462,4 +462,6 @@ cd frontend && npm run build
 
 ## 22. License
 
-License: To be determined.
+RunGrid is released under the [MIT License](LICENSE).
+
+See the [LICENSE](LICENSE) file for the complete license text.
